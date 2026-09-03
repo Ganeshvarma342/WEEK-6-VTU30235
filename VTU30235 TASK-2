@@ -1,0 +1,16 @@
+class Solution {
+    public boolean repeatedSubstringPattern(String s) {
+        // Concatenate the string with itself
+        String doubled = s + s;
+        
+        // Remove the first and last character, then check if s exists within it
+        return doubled.substring(1, doubled.length() - 1).contains(s);
+    }
+}
+
+
+Input
+s =
+"abab"
+Output
+true
