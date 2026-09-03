@@ -1,0 +1,66 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+
+public class Solution {
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        String tStr = br.readLine();
+        if (tStr == null || tStr.trim().isEmpty()) return;
+        
+        int t = Integer.parseInt(tStr.trim());
+        
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            String s = br.readLine().trim();
+            sb.append(stringSimilarity(s)).append("\n");
+        }
+        
+        System.out.print(sb.toString());
+    }
+
+    private static long stringSimilarity(String s) {
+        int n = s.length();
+        int[] z = new int[n];
+        
+        // Suffix at index 0 is the entire string itself
+        z[0] = n;
+        
+        // Window [L, R] maintains the rightmost matching segment found so far
+        int l = 0, r = 0;
+        long totalSimilarity = n; // Include z[0]
+        
+        for (int i = 1; i < n; i++) {
+            if (i <= r) {
+                // Use previously computed values within the range [L, R]
+                z[i] = Math.min(r - i + 1, z[i - l]);
+            }
+            
+            // Try to extend the prefix match beyond R
+            while (i + z[i] < n && s.charAt(z[i]) == s.charAt(i + z[i])) {
+                z[i]++;
+            }
+            
+            // Update the window boundary if we reached past current R
+            if (i + z[i] - 1 > r) {
+                l = i;
+                r = i + z[i] - 1;
+            }
+            
+            totalSimilarity += z[i];
+        }
+        
+        return totalSimilarity;
+    }
+}
+
+
+Input (stdin)
+2
+ababaa
+aa
+Your Output (stdout)
+11
+3
