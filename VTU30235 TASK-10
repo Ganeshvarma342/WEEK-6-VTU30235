@@ -1,0 +1,106 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.Arrays;
+
+public class Solution {
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String line = br.readLine();
+        if (line == null || line.trim().isEmpty()) return;
+
+        int n = Integer.parseInt(line.trim());
+        String s = br.readLine().trim();
+
+        // 1. Double the string to represent all cyclic rotations
+        String s2 = s + s;
+        int m = s2.length();
+
+        // 2. Build transformed string for Manacher's algorithm
+        StringBuilder sb = new StringBuilder("#");
+        for (int i = 0; i < m; i++) {
+            sb.append(s2.charAt(i)).append("#");
+        }
+        char[] t = sb.toString().toCharArray();
+        int tLen = t.length;
+
+        // 3. Compute palindrome radii
+        int[] p = new int[tLen];
+        int center = 0, right = 0;
+        for (int i = 0; i < tLen; i++) {
+            int mirror = 2 * center - i;
+            if (i < right) {
+                p[i] = Math.min(right - i, p[mirror]);
+            }
+            while (i - 1 - p[i] >= 0 && i + 1 + p[i] < tLen && t[i - 1 - p[i]] == t[i + 1 + p[i]]) {
+                p[i]++;
+            }
+            if (i + p[i] > right) {
+                center = i;
+                right = i + p[i];
+            }
+        }
+
+        int[] ans = new int[n];
+
+        // 4. For each rotation k, find the maximum valid palindrome substring inside [k, k + n - 1]
+        for (int k = 0; k < n; k++) {
+            int winStart = k;
+            int winEnd = k + n - 1;
+            int maxPal = 1;
+
+            // Map window start/end to transformed Manacher string indices
+            int tWinStart = winStart * 2 + 1;
+            int tWinEnd = winEnd * 2 + 1;
+
+            for (int i = tWinStart; i <= tWinEnd; i++) {
+                int radius = p[i];
+                if (radius <= 1) continue;
+
+                // Max possible radius allowed inside the window [winStart, winEnd]
+                int maxAllowedRadius = Math.min(i - tWinStart + 1, tWinEnd - i + 1);
+                int effectiveRadius = Math.min(radius, maxAllowedRadius);
+
+                int isCharCenter = (i % 2 == 1) ? 1 : 0;
+                int currentPalLen;
+
+                if (isCharCenter == 1) {
+                    currentPalLen = 1 + 2 * ((effectiveRadius - 1) / 2);
+                } else {
+                    currentPalLen = 2 * (effectiveRadius / 2);
+                }
+
+                if (currentPalLen > maxPal) {
+                    maxPal = currentPalLen;
+                }
+            }
+            ans[k] = maxPal;
+        }
+
+        // 5. Output results
+        StringBuilder out = new StringBuilder();
+        for (int k = 0; k < n; k++) {
+            out.append(ans[k]).append("\n");
+        }
+        System.out.print(out);
+    }
+}
+
+Input (stdin)
+13
+aaaaabbbbaaaa
+Your Output (stdout)
+12
+12
+10
+8
+8
+9
+11
+13
+11
+9
+8
+8
+10
